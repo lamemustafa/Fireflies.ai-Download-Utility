@@ -149,7 +149,7 @@ if res.code == "200"
       # Create directory if doesn't exist
       FileUtils.mkdir_p(directory) unless File.directory?(directory)
 
-      # Download the audio file
+      Download the audio file
       if audio_url
         start_time = Time.now
         URI.open(audio_url, "Accept-Encoding" => "gzip, deflate, br") do |content|
@@ -160,7 +160,7 @@ if res.code == "200"
         puts "#{Time.now - start_time}"
       end
 
-      # Download the video file
+      Download the video file
       if video_url
         start_time = Time.now
         URI.open(video_url, "Accept-Encoding" => "gzip, deflate, br") do |content|
@@ -194,6 +194,22 @@ if res.code == "200"
       #   puts e.inspect
       # end
       # puts "#{Time.now - start_time}"
+
+      # Preare and write transcript to json file
+
+      sentences = transcript["sentences"].map do |sentence|
+        {
+          "sentence": sentence["text"],
+          "startTime": Time.at(sentence["start_time"]).utc.strftime("%H:%M:%S"),
+          "endTime": Time.at(sentence["end_time"]).utc.strftime("%H:%M:%S"),
+          "speaker_name": sentence["speaker_name"],
+          "speaker_id": sentence["speaker_id"]
+        }
+      end
+      
+      File.open("#{file_name}.json", 'wb') do |file|
+        file << sentences.to_json
+      end
     end
   end
 end
