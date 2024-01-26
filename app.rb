@@ -161,14 +161,15 @@ if res.code == "200"
       end
 
       # Download the video file
-      # if video_url
-      #   start_time = Time.now
-      #   URI.open(video_url, "Accept-Encoding" => "gzip, deflate, br") do |content|
-      #     File.open("#{file_name}.mp4", 'wb') do |file|
-      #       file << content.read
-      #     end
-      #   end
-      # end
+      if video_url
+        start_time = Time.now
+        URI.open(video_url, "Accept-Encoding" => "gzip, deflate, br") do |content|
+          File.open("#{file_name}.mp4", 'wb') do |file|
+            file << content.read
+          end
+        end
+        puts "#{Time.now - start_time}"
+      end
 
       ## Experiment with Net/Http file download 
       # start_time = Time.now
