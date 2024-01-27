@@ -4,6 +4,7 @@ require 'json'
 require 'bundler/inline'
 require 'open-uri'
 require 'fileutils'
+require 'CSV'
 
 # Install additional gems
 gemfile do
@@ -149,7 +150,7 @@ if res.code == "200"
       # Create directory if doesn't exist
       FileUtils.mkdir_p(directory) unless File.directory?(directory)
 
-      Download the audio file
+      # Download the audio file
       if audio_url
         start_time = Time.now
         URI.open(audio_url, "Accept-Encoding" => "gzip, deflate, br") do |content|
@@ -160,7 +161,7 @@ if res.code == "200"
         puts "#{Time.now - start_time}"
       end
 
-      Download the video file
+      # Download the video file
       if video_url
         start_time = Time.now
         URI.open(video_url, "Accept-Encoding" => "gzip, deflate, br") do |content|
@@ -200,15 +201,24 @@ if res.code == "200"
       sentences = transcript["sentences"].map do |sentence|
         {
           "sentence": sentence["text"],
-          "startTime": Time.at(sentence["start_time"]).utc.strftime("%H:%M:%S"),
-          "endTime": Time.at(sentence["end_time"]).utc.strftime("%H:%M:%S"),
+          "startTime": Time.at(sentence["start_time"]).utc.strftime("%M:%S"),
+          "endTime": Time.at(sentence["end_time"]).utc.strftime("%M:%S"),
           "speaker_name": sentence["speaker_name"],
           "speaker_id": sentence["speaker_id"]
         }
       end
       
+      # Write data to JSON file
       File.open("#{file_name}.json", 'wb') do |file|
         file << sentences.to_json
+      end
+
+      # Write data to CSV file
+      CSV.open("#{file_name}.csv", "wb") do |csv|
+        csv << sentences.first.keys
+        sentences.each do |row|
+          csv << row.values
+        end
       end
     end
   end
