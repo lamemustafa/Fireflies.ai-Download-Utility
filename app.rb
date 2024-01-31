@@ -11,10 +11,13 @@ gemfile do
   source 'https://rubygems.org'
   gem 'dotenv', groups: [:development, :test]
   # gem "progressbar"
+  gem 'prawn'
+  gem 'matrix'
 end
 
 require 'dotenv/load'
 # require 'progressbar'
+require 'prawn'
 
 # Fireflies.ai supports GraphQL, thus the required grapghql query to fetch
 # data via POST API call
@@ -200,12 +203,12 @@ if res.code == "200"
 
       sentences = transcript["sentences"].map do |sentence|
         {
-          "sentence": sentence["text"],
-          "startTime": Time.at(sentence["start_time"]).utc.strftime("%M:%S"),
-          "endTime": Time.at(sentence["end_time"]).utc.strftime("%M:%S"),
-          "speaker_name": sentence["speaker_name"],
-          "speaker_id": sentence["speaker_id"]
-        }
+          "sentence"=> sentence["text"],
+          "startTime"=> Time.at(sentence["start_time"]).utc.strftime("%M:%S"),
+          "endTime"=> Time.at(sentence["end_time"]).utc.strftime("%M:%S"),
+          "speaker_name"=> sentence["speaker_name"],
+          "speaker_id"=> sentence["speaker_id"]
+      }
       end
       
       # Write data to JSON file
@@ -218,6 +221,23 @@ if res.code == "200"
         csv << sentences.first.keys
         sentences.each do |row|
           csv << row.values
+        end
+      end
+
+      # Preapre and write data to PDF file
+      Prawn::Document.generate("#{file_name}.pdf") do
+        sentences.each do |sentence|
+          speaker = if sentence['speaker_name']
+            "#{sentence['speaker_name']}"
+          else
+            "Speaker #{sentence['speaker_id']}"
+          end
+
+          text "<i>#{speaker}</i> - <b>#{sentence['startTime']}</b>",
+          inline_format: true
+          move_down 10
+          text "#{sentence['sentence']}"
+          move_down 10
         end
       end
     end
