@@ -303,6 +303,34 @@ if res.code == "200"
       File.open("#{file_name}.summary.json", 'wb') do |file|
         file << summary.to_json
       end
+
+      # Preapre and write data to PDF file
+      Prawn::Document.generate("#{file_name}.summary.pdf") do
+      summary.each do |k, v|
+          text "<b>#{k}</b>",
+          inline_format: true, size: 16
+          move_down 5
+          v.each do |point|
+            text "• #{point}", indent: 20, leading: 2
+          end
+          move_down 10
+        end
+      end
+
+      # Prepare amd write data to DOCX file
+      docx = Caracal::Document.new("#{file_name}.summary.docx")
+      summary.each do |k, v|
+        docx.h2 k do
+          color '0000BB'
+        end
+
+        docx.ul do
+          v.each do |point|
+            li point
+          end
+        end
+        docx.save
+      end
     end
   end
 end
