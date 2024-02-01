@@ -290,6 +290,19 @@ if res.code == "200"
       end
 
       File.write("#{file_name}.srt", srt_content)
+
+      # Prepare summary data
+      summary = {
+        "AI meeting summary:"=>transcript.dig("summary", "overview")&.split("\n"),
+        "Action items:"=>transcript.dig("summary", "action_items")&.split("\n\n"),
+        "Outline:"=>transcript.dig("summary", "outline")&.gsub(/-\s/, '')&.split("\n").reject(&:empty?),
+        "Notes:"=>transcript.dig("summary", "shorthand_bullet")&.gsub(/-\s/, '')&.split("\n").reject(&:empty?)
+      }
+      
+      # Write data to JSON file
+      File.open("#{file_name}.summary.json", 'wb') do |file|
+        file << summary.to_json
+      end
     end
   end
 end
