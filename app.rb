@@ -11,13 +11,23 @@ gemfile do
   source 'https://rubygems.org'
   gem 'dotenv', groups: [:development, :test]
   # gem "progressbar"
+
+  # gems for pdf generation
   gem 'prawn'
   gem 'matrix'
+
+  # gems for docx generation
+  gem 'caracal'
 end
 
 require 'dotenv/load'
 # require 'progressbar'
+
+# For PDF generation
 require 'prawn'
+
+# For DOCX generation
+require 'caracal'
 
 # Fireflies.ai supports GraphQL, thus the required grapghql query to fetch
 # data via POST API call
@@ -230,7 +240,7 @@ if res.code == "200"
           speaker = if sentence['speaker_name']
             "#{sentence['speaker_name']}"
           else
-            "Speaker #{sentence['speaker_id']}"
+            "Speaker #{sentence['speaker_id'].to_i + 1}"
           end
 
           text "<i>#{speaker}</i> - <b>#{sentence['startTime']}</b>",
@@ -239,6 +249,27 @@ if res.code == "200"
           text "#{sentence['sentence']}"
           move_down 10
         end
+      end
+
+      # Prepare amd write data to DOCX file
+      docx = Caracal::Document.new("#{file_name}.docx")
+      sentences.each do |sentence|
+        speaker = if sentence['speaker_name']
+          "#{sentence['speaker_name']}"
+        else
+          "Speaker #{sentence['speaker_id'].to_i + 1}"
+        end
+
+        docx.p  do
+          text sentence['startTime'], bold: true
+          br
+          text speaker
+          br
+          text sentence['sentence']
+          br
+        end
+
+        docx.save
       end
     end
   end
