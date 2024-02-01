@@ -218,7 +218,7 @@ if res.code == "200"
           "endTime"=> Time.at(sentence["end_time"]).utc.strftime("%M:%S"),
           "speaker_name"=> sentence["speaker_name"],
           "speaker_id"=> sentence["speaker_id"]
-      }
+        }
       end
       
       # Write data to JSON file
@@ -271,6 +271,25 @@ if res.code == "200"
 
         docx.save
       end
+
+      # Preapare and write data to SRT file
+      srt_content = ''
+      transcript["sentences"].each_with_index do |sentence, index|
+        speaker = if sentence['speaker_name']
+          "#{sentence['speaker_name']}"
+        else
+          "Speaker #{sentence['speaker_id'].to_i + 1}"
+        end
+
+        start_time = Time.at(sentence["start_time"]).utc.strftime('%H:%M:%S,%L')
+        end_time = Time.at(sentence["end_time"]).utc.strftime('%H:%M:%S,%L')
+
+        srt_content << "#{index + 1}\n"
+        srt_content << "#{start_time} --> #{end_time}\n"
+        srt_content << "#{speaker}: #{sentence['text']}\n\n"
+      end
+
+      File.write("#{file_name}.srt", srt_content)
     end
   end
 end
